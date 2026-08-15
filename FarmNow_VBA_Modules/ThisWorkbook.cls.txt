@@ -1,0 +1,21 @@
+' ============================================================
+' Paste this into the ThisWorkbook object's code window
+' (double-click "ThisWorkbook" in the Project Explorer - do NOT
+' import this as a new module, it is workbook-level event code).
+' ============================================================
+
+Private Sub Workbook_Open()
+    modMain.InitializeSystem
+End Sub
+
+Private Sub Workbook_BeforeClose(Cancel As Boolean)
+    ' Make sure no register/master sheet was left unprotected.
+    Dim ws As Worksheet
+    For Each ws In Me.Worksheets
+        If Left$(ws.Name, 4) = "reg_" Or Left$(ws.Name, 4) = "mst_" Then
+            On Error Resume Next
+            modMain.SetSheetProtection ws.Name, True
+            On Error GoTo 0
+        End If
+    Next ws
+End Sub
