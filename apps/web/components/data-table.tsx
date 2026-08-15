@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { EmptyState } from "@/components/page-header";
 import { cn } from "@/lib/utils";
-import { Columns3, ChevronLeft, ChevronRight } from "lucide-react";
+import { Columns3, ChevronLeft, ChevronRight } from "@/components/icons";
 
 export type DataColumn<T> = {
   id: string;

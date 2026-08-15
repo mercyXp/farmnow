@@ -9,6 +9,7 @@ export type AppProfile = {
   full_name: string;
   role: AppRole;
   is_active: boolean;
+  must_change_password: boolean;
 };
 
 export async function createClient() {
@@ -25,7 +26,7 @@ export async function createClient() {
           try {
             cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
           } catch {
-            // Called from a Server Component; middleware will refresh the session.
+            // Called from a Server Component; proxy will refresh the session.
           }
         },
       },
@@ -44,7 +45,7 @@ export async function requireUser() {
   }
   const { data: row } = await supabase
     .from("profiles")
-    .select("id, full_name, role, is_active")
+    .select("id, full_name, role, is_active, must_change_password")
     .eq("id", user.id)
     .maybeSingle();
   if (!row || !row.is_active || !isAppRole(row.role)) {
@@ -55,6 +56,7 @@ export async function requireUser() {
     full_name: row.full_name,
     role: row.role,
     is_active: row.is_active,
+    must_change_password: row.must_change_password,
   };
   return { supabase, user, profile };
 }

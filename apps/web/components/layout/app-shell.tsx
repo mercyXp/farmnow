@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Menu, LogOut } from "lucide-react";
+import { Menu, LogOut, User } from "@/components/icons";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import type { AppRole } from "@farmnow/domain";
 import { ROLE_LABELS } from "@farmnow/domain";
 import { BrandLogo } from "@/components/brand-logo";
@@ -56,10 +57,16 @@ export function AppShell({
             <p className="text-sm text-muted-foreground">FarmNow Limited · Lusaka</p>
           </div>
           <div className="flex items-center gap-3">
-            <div className="hidden text-right sm:block">
+            <Link href="/profile" className="hidden text-right sm:block hover:opacity-80">
               <p className="text-sm">{displayName}</p>
               <p className="text-xs text-muted-foreground">{ROLE_LABELS[role]}</p>
-            </div>
+            </Link>
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/profile">
+                <User className="h-4 w-4" />
+                Profile
+              </Link>
+            </Button>
             <Button variant="outline" size="sm" onClick={signOut}>
               <LogOut className="h-4 w-4" />
               Sign out

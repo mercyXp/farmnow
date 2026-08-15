@@ -138,10 +138,44 @@ export const environmentCreateSchema = z.object({
   ammoniaPpm: num.min(0),
 });
 
+export const passwordSchema = z
+  .string()
+  .min(8, "Password must be at least 8 characters.")
+  .max(72, "Password must be at most 72 characters.");
+
 export const loginSchema = z.object({
   email: z.string().email("Enter a valid email."),
-  password: z.string().min(8, "Password must be at least 8 characters."),
+  password: passwordSchema,
 });
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().email("Enter a valid email."),
+});
+
+export const newPasswordSchema = z
+  .object({
+    password: passwordSchema,
+    confirmPassword: passwordSchema,
+  })
+  .refine((v) => v.password === v.confirmPassword, {
+    message: "Passwords do not match.",
+    path: ["confirmPassword"],
+  });
+
+export const changePasswordSchema = z
+  .object({
+    currentPassword: passwordSchema,
+    newPassword: passwordSchema,
+    confirmPassword: passwordSchema,
+  })
+  .refine((v) => v.newPassword === v.confirmPassword, {
+    message: "Passwords do not match.",
+    path: ["confirmPassword"],
+  })
+  .refine((v) => v.newPassword !== v.currentPassword, {
+    message: "New password must be different from your current password.",
+    path: ["newPassword"],
+  });
 
 export const appRoleSchema = z.enum([
   "superadmin",
@@ -155,7 +189,7 @@ export const appRoleSchema = z.enum([
 export const userCreateSchema = z.object({
   fullName: z.string().min(2).max(120),
   email: z.string().email(),
-  password: z.string().min(8).max(72),
+  password: passwordSchema,
   role: appRoleSchema,
   isActive: z.boolean().default(true),
 });
@@ -165,8 +199,18 @@ export const userUpdateSchema = z.object({
   fullName: z.string().min(2).max(120),
   role: appRoleSchema,
   isActive: z.boolean(),
-  password: z.union([z.string().min(8).max(72), z.literal("")]).optional(),
 });
+
+export const setTemporaryPasswordSchema = z
+  .object({
+    id: z.string().uuid(),
+    password: passwordSchema,
+    confirmPassword: passwordSchema,
+  })
+  .refine((v) => v.password === v.confirmPassword, {
+    message: "Passwords do not match.",
+    path: ["confirmPassword"],
+  });
 
 const withId = <T extends z.ZodRawShape>(schema: z.ZodObject<T>) =>
   schema.extend({ id: z.string().uuid() });
@@ -215,5 +259,8 @@ export type DailyRoutineCreate = z.infer<typeof dailyRoutineCreateSchema>;
 export type EnvironmentCreate = z.infer<typeof environmentCreateSchema>;
 export type UserCreate = z.infer<typeof userCreateSchema>;
 export type UserUpdate = z.infer<typeof userUpdateSchema>;
+export type ChangePassword = z.infer<typeof changePasswordSchema>;
+export type NewPassword = z.infer<typeof newPasswordSchema>;
+export type SetTemporaryPassword = z.infer<typeof setTemporaryPasswordSchema>;
 export type ReportType = z.infer<typeof reportTypeSchema>;
 export type DeactivateEntry = z.infer<typeof deactivateEntrySchema>;

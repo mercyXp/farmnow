@@ -5,12 +5,12 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { APP_ROLES, ROLE_LABELS, userCreateSchema, type AppRole } from "@farmnow/domain";
+import { APP_ROLES, ROLE_LABELS, setTemporaryPasswordSchema, userCreateSchema, type AppRole } from "@farmnow/domain";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
-import { createUser, updateUser } from "@/features/users/actions";
+import { createUser, setTemporaryPassword, updateUser } from "@/features/users/actions";
 import type { ManagedUser } from "@/features/users/queries";
 
 export function UsersManager({
@@ -29,23 +29,16 @@ export function UsersManager({
         <Table>
           <THead>
             <TR>
-              <TH>Name</TH>
-              <TH>Email</TH>
+              <TH>User</TH>
               <TH>Role</TH>
               <TH>Status</TH>
-              <TH>Created</TH>
               <TH>Last activity</TH>
-              <TH></TH>
+              <TH>Actions</TH>
             </TR>
           </THead>
           <TBody>
             {users.map((row) => (
-              <UserRow
-                key={row.id}
-                user={row}
-                actorId={actorId}
-                assignable={assignable}
-              />
+              <UserRow key={row.id} user={row} actorId={actorId} assignable={assignable} />
             ))}
           </TBody>
         </Table>
@@ -70,12 +63,12 @@ function CreateUserForm({ assignable }: { assignable: AppRole[] }) {
     <form
       className="grid gap-3 rounded-xl border bg-card p-6 sm:grid-cols-2 lg:grid-cols-3"
       onSubmit={form.handleSubmit(async (values) => {
-        const result = await createUser(values);
+        const result = await createUser({ ...values, isActive: true });
         if (!result.ok) {
           toast.error(result.error);
           return;
         }
-        toast.success("User created");
+        toast.success("User created. Share the temporary password — they must change it on first login.");
         form.reset();
         router.refresh();
       })}
@@ -99,7 +92,9 @@ function CreateUserForm({ assignable }: { assignable: AppRole[] }) {
         <Input id="password" type="password" autoComplete="new-password" {...form.register("password")} />
         {form.formState.errors.password ? (
           <p className="text-xs text-destructive">{form.formState.errors.password.message}</p>
-        ) : null}
+        ) : (
+          <p className="text-xs text-muted-foreground">Give this to the employee. They change it on first login.</p>
+        )}
       </div>
       <div className="space-y-1">
         <Label htmlFor="role">Role</Label>
@@ -114,13 +109,9 @@ function CreateUserForm({ assignable }: { assignable: AppRole[] }) {
           <p className="text-xs text-destructive">{form.formState.errors.role.message}</p>
         ) : null}
       </div>
-      <label className="flex items-center gap-2 self-end text-sm">
-        <input type="checkbox" className="h-4 w-4" {...form.register("isActive")} />
-        Active
-      </label>
       <div className="flex items-end">
         <Button type="submit" disabled={form.formState.isSubmitting}>
-          {form.formState.isSubmitting ? "Creating…" : "Create user"}
+          {form.formState.isSubmitting ? "Creating…" : "Add user"}
         </Button>
       </div>
     </form>
@@ -136,7 +127,7 @@ function UserRow({
   actorId: string;
   assignable: AppRole[];
 }) {
-  const [editing, setEditing] = useState(false);
+  const [mode, setMode] = useState<"view" | "edit" | "temp">("view");
   const [pending, setPending] = useState(false);
   const router = useRouter();
   const roles = assignable.includes(user.role) ? assignable : [user.role, ...assignable];
@@ -148,22 +139,21 @@ function UserRow({
       fullName: String(fd.get("fullName") ?? user.full_name),
       role: String(fd.get("role") ?? user.role),
       isActive: extras?.isActive ?? fd.get("isActive") === "on",
-      password: String(fd.get("password") ?? ""),
     });
     setPending(false);
     if (!result.ok) {
       toast.error(result.error);
       return;
     }
-    toast.success("User updated");
-    setEditing(false);
+    toast.success(extras?.isActive === false ? "Account deactivated" : extras?.isActive === true ? "Account activated" : "User updated");
+    setMode("view");
     router.refresh();
   }
 
   return (
     <TR>
-      <TD colSpan={7} className="p-0">
-        {editing ? (
+      <TD colSpan={5} className="p-0">
+        {mode === "edit" ? (
           <form
             className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4"
             onSubmit={async (e) => {
@@ -173,7 +163,6 @@ function UserRow({
           >
             <Field name="fullName" label="Full name" defaultValue={user.full_name} required />
             <RoleSelect name="role" roles={roles} defaultValue={user.role} />
-            <Field name="password" label="New password (optional)" type="password" minLength={8} />
             <label className="flex items-center gap-2 self-end text-sm">
               <input type="checkbox" name="isActive" defaultChecked={user.is_active} className="h-4 w-4" />
               Active
@@ -182,24 +171,40 @@ function UserRow({
               <Button type="submit" disabled={pending}>
                 {pending ? "Saving…" : "Save"}
               </Button>
-              <Button type="button" variant="outline" onClick={() => setEditing(false)}>
+              <Button type="button" variant="outline" onClick={() => setMode("view")}>
                 Cancel
               </Button>
             </div>
           </form>
+        ) : mode === "temp" ? (
+          <TempPasswordForm
+            userId={user.id}
+            name={user.full_name}
+            pending={pending}
+            setPending={setPending}
+            onCancel={() => setMode("view")}
+            onSaved={() => {
+              setMode("view");
+              router.refresh();
+            }}
+          />
         ) : (
-          <div className="grid grid-cols-[repeat(6,minmax(0,1fr))_auto] items-center gap-2 px-3 py-3 text-sm">
-            <span className="font-medium">{user.full_name}</span>
-            <span>{user.email}</span>
+          <div className="grid grid-cols-1 items-center gap-3 px-3 py-3 text-sm sm:grid-cols-[minmax(0,1.4fr)_minmax(0,0.8fr)_minmax(0,0.6fr)_minmax(0,0.8fr)_auto]">
+            <div>
+              <p className="font-medium">{user.full_name}</p>
+              <p className="text-xs text-muted-foreground">{user.email}</p>
+            </div>
             <span>{ROLE_LABELS[user.role]}</span>
             <span>
-              <Badge variant={user.is_active ? "ok" : "muted"}>{user.is_active ? "Active" : "Inactive"}</Badge>
+              <Badge variant={user.is_active ? "ok" : "danger"}>{user.is_active ? "Active" : "Inactive"}</Badge>
             </span>
-            <span>{user.created_at.slice(0, 10)}</span>
             <span>{user.last_sign_in_at ? user.last_sign_in_at.slice(0, 16).replace("T", " ") : "—"}</span>
-            <span className="flex justify-end gap-2">
-              <Button size="sm" variant="outline" onClick={() => setEditing(true)}>
+            <span className="flex flex-wrap justify-end gap-2">
+              <Button size="sm" variant="outline" onClick={() => setMode("edit")}>
                 Edit
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => setMode("temp")}>
+                Set temporary password
               </Button>
               {user.is_active ? (
                 <Button
@@ -211,7 +216,9 @@ function UserRow({
                       toast.error("You cannot deactivate your own Superadmin account.");
                       return;
                     }
-                    if (!confirm(`Deactivate ${user.full_name}? They will not be able to sign in.`)) return;
+                    if (!confirm(`Deactivate ${user.full_name}? They will lose ERP access. Historical records stay.`)) {
+                      return;
+                    }
                     const fd = new FormData();
                     fd.set("fullName", user.full_name);
                     fd.set("role", user.role);
@@ -226,14 +233,14 @@ function UserRow({
                   variant="outline"
                   disabled={pending}
                   onClick={async () => {
-                    if (!confirm(`Reactivate ${user.full_name}?`)) return;
+                    if (!confirm(`Activate ${user.full_name}?`)) return;
                     const fd = new FormData();
                     fd.set("fullName", user.full_name);
                     fd.set("role", user.role);
                     await save(fd, { isActive: true });
                   }}
                 >
-                  Reactivate
+                  Activate
                 </Button>
               )}
             </span>
@@ -244,33 +251,92 @@ function UserRow({
   );
 }
 
+function TempPasswordForm({
+  userId,
+  name,
+  pending,
+  setPending,
+  onCancel,
+  onSaved,
+}: {
+  userId: string;
+  name: string;
+  pending: boolean;
+  setPending: (v: boolean) => void;
+  onCancel: () => void;
+  onSaved: () => void;
+}) {
+  const form = useForm({
+    resolver: zodResolver(setTemporaryPasswordSchema),
+    defaultValues: { id: userId, password: "", confirmPassword: "" },
+  });
+  return (
+    <form
+      className="grid gap-3 p-4 sm:grid-cols-2"
+      onSubmit={form.handleSubmit(async (values) => {
+        setPending(true);
+        const result = await setTemporaryPassword(values);
+        setPending(false);
+        if (!result.ok) {
+          toast.error(result.error);
+          return;
+        }
+        toast.success(`Temporary password set for ${name}. They must change it on next login.`);
+        onSaved();
+      })}
+    >
+      <p className="sm:col-span-2 text-sm text-muted-foreground">
+        Replace the password for {name}. You cannot see their current password. They will be required to choose a new one
+        at next sign-in.
+      </p>
+      <div className="space-y-1">
+        <Label htmlFor={`temp-${userId}`}>Temporary password</Label>
+        <Input id={`temp-${userId}`} type="password" autoComplete="new-password" {...form.register("password")} />
+        {form.formState.errors.password ? (
+          <p className="text-xs text-destructive">{form.formState.errors.password.message}</p>
+        ) : null}
+      </div>
+      <div className="space-y-1">
+        <Label htmlFor={`temp-confirm-${userId}`}>Confirm password</Label>
+        <Input
+          id={`temp-confirm-${userId}`}
+          type="password"
+          autoComplete="new-password"
+          {...form.register("confirmPassword")}
+        />
+        {form.formState.errors.confirmPassword ? (
+          <p className="text-xs text-destructive">{form.formState.errors.confirmPassword.message}</p>
+        ) : null}
+      </div>
+      <div className="flex gap-2 sm:col-span-2">
+        <Button type="submit" disabled={pending || form.formState.isSubmitting}>
+          {pending || form.formState.isSubmitting ? "Saving…" : "Set temporary password"}
+        </Button>
+        <Button type="button" variant="outline" onClick={onCancel}>
+          Cancel
+        </Button>
+      </div>
+    </form>
+  );
+}
+
 function Field({
   name,
   label,
   type = "text",
   defaultValue,
   required,
-  minLength,
 }: {
   name: string;
   label: string;
   type?: string;
   defaultValue?: string;
   required?: boolean;
-  minLength?: number;
 }) {
   return (
     <div className="space-y-1">
       <Label htmlFor={name}>{label}</Label>
-      <Input
-        id={name}
-        name={name}
-        type={type}
-        defaultValue={defaultValue}
-        required={required}
-        minLength={minLength}
-        autoComplete={type === "password" ? "new-password" : undefined}
-      />
+      <Input id={name} name={name} type={type} defaultValue={defaultValue} required={required} />
     </div>
   );
 }

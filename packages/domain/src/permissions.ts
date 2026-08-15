@@ -301,6 +301,8 @@ export function navForRole(role: AppRole): NavGroup[] {
 
 export function canAccessPath(role: AppRole, pathname: string): boolean {
   if (pathname === "/dashboard" || pathname === "/") return true;
+  if (pathname.startsWith("/profile")) return true;
+  if (pathname === "/change-password" || pathname === "/reset-password") return true;
   if (pathname.startsWith("/users")) return hasPermission(role, "manageUsers");
   if (pathname.startsWith("/settings/import")) return hasPermission(role, "importExcel");
   if (pathname.startsWith("/settings")) {

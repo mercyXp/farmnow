@@ -18,6 +18,7 @@ export type Database = {
           full_name: string;
           role: Database["public"]["Enums"]["app_role"];
           is_active: boolean;
+          must_change_password: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -27,6 +28,7 @@ export type Database = {
           full_name?: string;
           role?: Database["public"]["Enums"]["app_role"];
           is_active?: boolean;
+          must_change_password?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -743,6 +745,7 @@ export type Database = {
       app_role: { Args: Record<PropertyKey, never>; Returns: Database["public"]["Enums"]["app_role"] };
       is_app_user: { Args: Record<PropertyKey, never>; Returns: boolean };
       role_in: { Args: { roles: Database["public"]["Enums"]["app_role"][] }; Returns: boolean };
+      clear_must_change_password: { Args: Record<PropertyKey, never>; Returns: undefined };
     };
     Enums: {
       app_role: "superadmin" | "admin" | "manager" | "supervisor" | "accountant" | "entry_clerk";

@@ -8,6 +8,7 @@ import {
   canDeactivateUser,
   canManageTarget,
   isAppRole,
+  setTemporaryPasswordSchema,
   userCreateSchema,
   userUpdateSchema,
   type AppRole,
@@ -67,6 +68,7 @@ export async function createUser(input: unknown): Promise<Result> {
         display_name: parsed.fullName,
         role: parsed.role,
         is_active: parsed.isActive,
+        must_change_password: true,
       })
       .eq("id", newId);
     if (profileError) throw profileError;
@@ -144,11 +146,9 @@ export async function updateUser(input: unknown): Promise<Result> {
       .eq("id", parsed.id);
     if (updateError) throw updateError;
 
-    const authPatch: { password?: string; user_metadata: { full_name: string } } = {
+    const authUpdate = await admin.auth.admin.updateUserById(parsed.id, {
       user_metadata: { full_name: parsed.fullName },
-    };
-    if (parsed.password) authPatch.password = parsed.password;
-    const authUpdate = await admin.auth.admin.updateUserById(parsed.id, authPatch);
+    });
     if (authUpdate.error) throw new Error("Could not update the user.");
 
     const oldData = { fullName: target.full_name, role: target.role, isActive: target.is_active };
@@ -178,6 +178,48 @@ export async function updateUser(input: unknown): Promise<Result> {
       entityId: parsed.id,
       oldData,
       newData,
+    });
+    revalidatePath("/users");
+    return { ok: true };
+  } catch (error) {
+    return actionError(error);
+  }
+}
+
+export async function setTemporaryPassword(input: unknown): Promise<Result> {
+  try {
+    const parsed = setTemporaryPasswordSchema.parse(input);
+    const { supabase, user, profile } = await requirePermission("manageUsers");
+    const admin = createAdminClient();
+    const { data: target, error: loadError } = await admin
+      .from("profiles")
+      .select("id, full_name, role, is_active")
+      .eq("id", parsed.id)
+      .maybeSingle();
+    if (loadError) throw loadError;
+    if (!target || !isAppRole(target.role)) {
+      throw new Error("You do not have permission to perform this action.");
+    }
+    if (!canManageTarget(profile.role, target.role)) {
+      throw new Error("You do not have permission to perform this action.");
+    }
+
+    const authUpdate = await admin.auth.admin.updateUserById(parsed.id, {
+      password: parsed.password,
+    });
+    if (authUpdate.error) throw new Error("Could not set the temporary password.");
+
+    const { error: flagError } = await admin
+      .from("profiles")
+      .update({ must_change_password: true })
+      .eq("id", parsed.id);
+    if (flagError) throw flagError;
+
+    await writeAudit(supabase, user, {
+      action: "TEMP_PASSWORD_SET",
+      entityType: "profiles",
+      entityId: parsed.id,
+      newData: { fullName: target.full_name },
     });
     revalidatePath("/users");
     return { ok: true };

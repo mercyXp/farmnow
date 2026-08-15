@@ -11,7 +11,7 @@ export default async function UsersPage() {
     <div>
       <PageHeader
         title="Users"
-        description="Create staff accounts, assign roles, and deactivate access. Passwords are stored by Supabase Auth, not in FarmNow tables."
+        description="Create staff accounts, assign roles, and deactivate access. Passwords live in Supabase Auth, never in FarmNow tables or audit logs."
       />
       <UsersManager
         users={users}

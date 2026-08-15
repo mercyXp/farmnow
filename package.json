@@ -4,12 +4,14 @@
   "packageManager": "pnpm@11.3.0",
   "scripts": {
     "dev": "pnpm --filter @farmnow/web dev",
+    "dev:webpack": "pnpm --filter @farmnow/web dev:webpack",
+    "clean": "pnpm --filter @farmnow/web clean",
     "build": "pnpm --filter @farmnow/web build",
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test"
   },
   "devDependencies": {
-    "typescript": "^5.9.2"
+    "typescript": "^7.0.2"
   }
 }

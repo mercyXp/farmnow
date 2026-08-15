@@ -42,6 +42,10 @@ export function publicError(error: unknown): string {
     if (/already exists/i.test(msg) || /Could not create the user/i.test(msg) || /Could not update the user/i.test(msg)) {
       return msg;
     }
+    if (/Current password is incorrect/i.test(msg) || /Could not update your password/i.test(msg) || /different from your current password/i.test(msg)) {
+      return msg;
+    }
+    if (/Could not set the temporary password/i.test(msg)) return msg;
     return "Something went wrong. Please check your entries and try again.";
   }
   return "Something went wrong. Please check your entries and try again.";

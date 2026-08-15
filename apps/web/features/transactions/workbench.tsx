@@ -1,12 +1,19 @@
 "use client";
 
-import { cloneElement, useState, type ReactElement } from "react";
+import { createContext, useContext, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { DataTable, type DataColumn } from "@/components/data-table";
 import { deactivateEntry } from "@/features/transactions/actions";
 import type { DeactivateEntry } from "@farmnow/domain";
+
+const WorkbenchRecordContext = createContext<unknown>(undefined);
+
+export function useInitial<T>(passed?: T): T | undefined {
+  const fromWorkbench = useContext(WorkbenchRecordContext) as T | undefined;
+  return passed ?? fromWorkbench;
+}
 
 export function RecordWorkbench<T extends { id: string }>({
   children,
@@ -18,7 +25,7 @@ export function RecordWorkbench<T extends { id: string }>({
   emptyDescription,
   deleteTable,
 }: {
-  children: ReactElement;
+  children: ReactNode;
   rows: T[];
   columns: DataColumn<T>[];
   canRecord: boolean;
@@ -45,7 +52,7 @@ export function RecordWorkbench<T extends { id: string }>({
             </div>
           ) : null}
           <div key={editing?.id ?? "create"}>
-            {cloneElement(children as ReactElement<{ initial?: T }>, { initial: editing ?? undefined })}
+            <WorkbenchRecordContext.Provider value={editing ?? undefined}>{children}</WorkbenchRecordContext.Provider>
           </div>
         </div>
       ) : null}

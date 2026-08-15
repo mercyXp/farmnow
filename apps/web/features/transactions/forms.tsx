@@ -58,6 +58,7 @@ import {
   ZodForm,
   todayIso,
 } from "@/features/transactions/form-kit";
+import { useInitial } from "@/features/transactions/workbench";
 
 type Named = { id: string; label: string };
 
@@ -70,16 +71,17 @@ export function MortalityForm({
   causes: string[];
   initial?: { id: string; flockId: string; entryDate: string; mortalityCount: number; cause: string };
 }) {
-  const editing = Boolean(initial?.id);
+  const record = useInitial(initial);
+  const editing = Boolean(record?.id);
   return (
     <ZodForm
       schema={editing ? mortalityUpdateSchema : mortalityCreateSchema}
       defaultValues={{
-        flockId: initial?.flockId ?? "",
-        entryDate: initial?.entryDate ?? todayIso(),
-        mortalityCount: initial?.mortalityCount,
-        cause: initial?.cause ?? "",
-        ...(editing ? { id: initial!.id } : {}),
+        flockId: record?.flockId ?? "",
+        entryDate: record?.entryDate ?? todayIso(),
+        mortalityCount: record?.mortalityCount,
+        cause: record?.cause ?? "",
+        ...(editing ? { id: record!.id } : {}),
       }}
       onSubmit={(values) => (editing ? updateMortality(values) : createMortality(values))}
       submitLabel={editing ? "Update" : "Save"}
@@ -104,16 +106,17 @@ export function FeedUsageForm({
   feed: Named[];
   initial?: { id: string; flockId: string; entryDate: string; feedTypeId: string; kgUsed: number };
 }) {
-  const editing = Boolean(initial?.id);
+  const record = useInitial(initial);
+  const editing = Boolean(record?.id);
   return (
     <ZodForm
       schema={editing ? feedConsumptionUpdateSchema : feedConsumptionCreateSchema}
       defaultValues={{
-        flockId: initial?.flockId ?? "",
-        entryDate: initial?.entryDate ?? todayIso(),
-        feedTypeId: initial?.feedTypeId ?? "",
-        kgUsed: initial?.kgUsed,
-        ...(editing ? { id: initial!.id } : {}),
+        flockId: record?.flockId ?? "",
+        entryDate: record?.entryDate ?? todayIso(),
+        feedTypeId: record?.feedTypeId ?? "",
+        kgUsed: record?.kgUsed,
+        ...(editing ? { id: record!.id } : {}),
       }}
       onSubmit={(values) => (editing ? updateFeedConsumption(values) : createFeedConsumption(values))}
       submitLabel={editing ? "Update" : "Save"}
@@ -150,20 +153,21 @@ export function FeedPurchaseForm({
     paymentMethod: string;
   };
 }) {
-  const editing = Boolean(initial?.id);
+  const record = useInitial(initial);
+  const editing = Boolean(record?.id);
   return (
     <ZodForm
       schema={editing ? feedPurchaseUpdateSchema : feedPurchaseCreateSchema}
       defaultValues={{
-        purchaseDate: initial?.purchaseDate ?? todayIso(),
-        supplierId: initial?.supplierId ?? "",
-        feedTypeId: initial?.feedTypeId ?? "",
-        numberOfBags: initial?.numberOfBags,
-        bagWeightKg: initial?.bagWeightKg ?? 50,
-        unitCostPerBag: initial?.unitCostPerBag,
-        invoiceNo: initial?.invoiceNo ?? "",
-        paymentMethod: initial?.paymentMethod ?? "",
-        ...(editing ? { id: initial!.id } : {}),
+        purchaseDate: record?.purchaseDate ?? todayIso(),
+        supplierId: record?.supplierId ?? "",
+        feedTypeId: record?.feedTypeId ?? "",
+        numberOfBags: record?.numberOfBags,
+        bagWeightKg: record?.bagWeightKg ?? 50,
+        unitCostPerBag: record?.unitCostPerBag,
+        invoiceNo: record?.invoiceNo ?? "",
+        paymentMethod: record?.paymentMethod ?? "",
+        ...(editing ? { id: record!.id } : {}),
       }}
       onSubmit={(values) => (editing ? updateFeedPurchase(values) : createFeedPurchase(values))}
       submitLabel={editing ? "Update" : "Save"}
@@ -190,17 +194,18 @@ export function WeightForm({
   flocks: Named[];
   initial?: { id: string; flockId: string; entryDate: string; weekNo: number; sampleSize: number; avgBodyWeightG: number };
 }) {
-  const editing = Boolean(initial?.id);
+  const record = useInitial(initial);
+  const editing = Boolean(record?.id);
   return (
     <ZodForm
       schema={editing ? weeklyWeightUpdateSchema : weeklyWeightCreateSchema}
       defaultValues={{
-        flockId: initial?.flockId ?? "",
-        entryDate: initial?.entryDate ?? todayIso(),
-        weekNo: initial?.weekNo,
-        sampleSize: initial?.sampleSize,
-        avgBodyWeightG: initial?.avgBodyWeightG,
-        ...(editing ? { id: initial!.id } : {}),
+        flockId: record?.flockId ?? "",
+        entryDate: record?.entryDate ?? todayIso(),
+        weekNo: record?.weekNo,
+        sampleSize: record?.sampleSize,
+        avgBodyWeightG: record?.avgBodyWeightG,
+        ...(editing ? { id: record!.id } : {}),
       }}
       onSubmit={(values) => (editing ? updateWeeklyWeight(values) : createWeeklyWeight(values))}
       submitLabel={editing ? "Update" : "Save"}
@@ -228,17 +233,18 @@ export function HealthForm({
   routes: string[];
   initial?: { id: string; flockId: string; entryDate: string; productId: string; dosageGiven: string; route: string };
 }) {
-  const editing = Boolean(initial?.id);
+  const record = useInitial(initial);
+  const editing = Boolean(record?.id);
   return (
     <ZodForm
       schema={editing ? healthUpdateSchema : healthCreateSchema}
       defaultValues={{
-        flockId: initial?.flockId ?? "",
-        entryDate: initial?.entryDate ?? todayIso(),
-        productId: initial?.productId ?? "",
-        dosageGiven: initial?.dosageGiven ?? "",
-        route: initial?.route ?? "",
-        ...(editing ? { id: initial!.id } : {}),
+        flockId: record?.flockId ?? "",
+        entryDate: record?.entryDate ?? todayIso(),
+        productId: record?.productId ?? "",
+        dosageGiven: record?.dosageGiven ?? "",
+        route: record?.route ?? "",
+        ...(editing ? { id: record!.id } : {}),
       }}
       onSubmit={(values) => (editing ? updateHealth(values) : createHealth(values))}
       submitLabel={editing ? "Update" : "Save"}
@@ -276,20 +282,21 @@ export function MedicineLotForm({
     unitCost: number;
   };
 }) {
-  const editing = Boolean(initial?.id);
+  const record = useInitial(initial);
+  const editing = Boolean(record?.id);
   return (
     <ZodForm
       schema={editing ? medicineLotUpdateSchema : medicineLotCreateSchema}
       defaultValues={{
-        flockId: initial?.flockId ?? "",
-        productId: initial?.productId ?? "",
-        supplierId: initial?.supplierId ?? "",
-        lotNumber: initial?.lotNumber ?? "",
-        expiryDate: initial?.expiryDate ?? todayIso(),
-        quantityReceived: initial?.quantityReceived,
-        quantityUsed: initial?.quantityUsed ?? 0,
-        unitCost: initial?.unitCost,
-        ...(editing ? { id: initial!.id } : {}),
+        flockId: record?.flockId ?? "",
+        productId: record?.productId ?? "",
+        supplierId: record?.supplierId ?? "",
+        lotNumber: record?.lotNumber ?? "",
+        expiryDate: record?.expiryDate ?? todayIso(),
+        quantityReceived: record?.quantityReceived,
+        quantityUsed: record?.quantityUsed ?? 0,
+        unitCost: record?.unitCost,
+        ...(editing ? { id: record!.id } : {}),
       }}
       onSubmit={(values) => (editing ? updateMedicineLot(values) : createMedicineLot(values))}
       submitLabel={editing ? "Update" : "Save"}
@@ -330,22 +337,23 @@ export function SaleForm({
     invoiceNo: string;
   };
 }) {
-  const editing = Boolean(initial?.id);
+  const record = useInitial(initial);
+  const editing = Boolean(record?.id);
   return (
     <ZodForm
       schema={editing ? saleUpdateSchema : saleCreateSchema}
       defaultValues={{
-        flockId: initial?.flockId ?? "",
-        entryDate: initial?.entryDate ?? todayIso(),
-        customerId: initial?.customerId ?? "",
-        birdsDispatched: initial?.birdsDispatched,
-        liveWeightKg: initial?.liveWeightKg,
-        pricePerKg: initial?.pricePerKg,
-        pricePerBird: initial?.pricePerBird ?? 0,
-        transportCost: initial?.transportCost ?? 0,
-        amountPaid: initial?.amountPaid ?? 0,
-        invoiceNo: initial?.invoiceNo ?? "",
-        ...(editing ? { id: initial!.id } : {}),
+        flockId: record?.flockId ?? "",
+        entryDate: record?.entryDate ?? todayIso(),
+        customerId: record?.customerId ?? "",
+        birdsDispatched: record?.birdsDispatched,
+        liveWeightKg: record?.liveWeightKg,
+        pricePerKg: record?.pricePerKg,
+        pricePerBird: record?.pricePerBird ?? 0,
+        transportCost: record?.transportCost ?? 0,
+        amountPaid: record?.amountPaid ?? 0,
+        invoiceNo: record?.invoiceNo ?? "",
+        ...(editing ? { id: record!.id } : {}),
       }}
       onSubmit={(values) => (editing ? updateSale(values) : createSale(values))}
       submitLabel={editing ? "Update" : "Save"}
@@ -391,21 +399,22 @@ export function ExpenseForm({
     approvedBy: string;
   };
 }) {
-  const editing = Boolean(initial?.id);
+  const record = useInitial(initial);
+  const editing = Boolean(record?.id);
   return (
     <ZodForm
       schema={editing ? expenseUpdateSchema : expenseCreateSchema}
       defaultValues={{
-        flockId: initial?.flockId ?? "",
-        entryDate: initial?.entryDate ?? todayIso(),
-        category: initial?.category ?? "",
-        supplierId: initial?.supplierId ?? "",
-        quantity: initial?.quantity ?? 1,
-        unitCost: initial?.unitCost,
-        paymentMethod: initial?.paymentMethod ?? "",
-        paymentRef: initial?.paymentRef ?? "",
-        approvedBy: initial?.approvedBy ?? "",
-        ...(editing ? { id: initial!.id } : {}),
+        flockId: record?.flockId ?? "",
+        entryDate: record?.entryDate ?? todayIso(),
+        category: record?.category ?? "",
+        supplierId: record?.supplierId ?? "",
+        quantity: record?.quantity ?? 1,
+        unitCost: record?.unitCost,
+        paymentMethod: record?.paymentMethod ?? "",
+        paymentRef: record?.paymentRef ?? "",
+        approvedBy: record?.approvedBy ?? "",
+        ...(editing ? { id: record!.id } : {}),
       }}
       onSubmit={(values) => (editing ? updateExpense(values) : createExpense(values))}
       submitLabel={editing ? "Update" : "Save"}
@@ -443,18 +452,19 @@ export function IncomeForm({
     receivedBy: string;
   };
 }) {
-  const editing = Boolean(initial?.id);
+  const record = useInitial(initial);
+  const editing = Boolean(record?.id);
   return (
     <ZodForm
       schema={editing ? otherIncomeUpdateSchema : otherIncomeCreateSchema}
       defaultValues={{
-        entryDate: initial?.entryDate ?? todayIso(),
-        source: initial?.source ?? "",
-        description: initial?.description ?? "",
-        amount: initial?.amount,
-        paymentMethod: initial?.paymentMethod ?? "",
-        receivedBy: initial?.receivedBy ?? "",
-        ...(editing ? { id: initial!.id } : {}),
+        entryDate: record?.entryDate ?? todayIso(),
+        source: record?.source ?? "",
+        description: record?.description ?? "",
+        amount: record?.amount,
+        paymentMethod: record?.paymentMethod ?? "",
+        receivedBy: record?.receivedBy ?? "",
+        ...(editing ? { id: record!.id } : {}),
       }}
       onSubmit={(values) => (editing ? updateOtherIncome(values) : createOtherIncome(values))}
       submitLabel={editing ? "Update" : "Save"}
@@ -499,24 +509,25 @@ export function RoutineForm({
     notes: string;
   };
 }) {
-  const editing = Boolean(initial?.id);
+  const record = useInitial(initial);
+  const editing = Boolean(record?.id);
   return (
     <ZodForm
       schema={editing ? dailyRoutineUpdateSchema : dailyRoutineCreateSchema}
       defaultValues={{
-        flockId: initial?.flockId ?? "",
-        entryDate: initial?.entryDate ?? todayIso(),
-        temperatureC: initial?.temperatureC,
-        humidityPct: initial?.humidityPct,
-        waterAvailable: initial?.waterAvailable ?? "Yes",
-        feedAvailable: initial?.feedAvailable ?? "Yes",
-        drinkersCleaned: initial?.drinkersCleaned ?? "Yes",
-        litterCondition: initial?.litterCondition ?? "",
-        ventilation: initial?.ventilation ?? "",
-        sickBirdsObserved: initial?.sickBirdsObserved ?? 0,
-        employeeId: initial?.employeeId ?? "",
-        notes: initial?.notes ?? "",
-        ...(editing ? { id: initial!.id } : {}),
+        flockId: record?.flockId ?? "",
+        entryDate: record?.entryDate ?? todayIso(),
+        temperatureC: record?.temperatureC,
+        humidityPct: record?.humidityPct,
+        waterAvailable: record?.waterAvailable ?? "Yes",
+        feedAvailable: record?.feedAvailable ?? "Yes",
+        drinkersCleaned: record?.drinkersCleaned ?? "Yes",
+        litterCondition: record?.litterCondition ?? "",
+        ventilation: record?.ventilation ?? "",
+        sickBirdsObserved: record?.sickBirdsObserved ?? 0,
+        employeeId: record?.employeeId ?? "",
+        notes: record?.notes ?? "",
+        ...(editing ? { id: record!.id } : {}),
       }}
       onSubmit={(values) => (editing ? updateRoutine(values) : createRoutine(values))}
       submitLabel={editing ? "Update" : "Save"}
@@ -555,18 +566,19 @@ export function EnvironmentForm({
     ammoniaPpm: number;
   };
 }) {
-  const editing = Boolean(initial?.id);
+  const record = useInitial(initial);
+  const editing = Boolean(record?.id);
   return (
     <ZodForm
       schema={editing ? environmentUpdateSchema : environmentCreateSchema}
       defaultValues={{
-        houseId: initial?.houseId ?? "",
-        entryDate: initial?.entryDate ?? todayIso(),
-        readingTime: initial?.readingTime ?? "07:00",
-        temperatureC: initial?.temperatureC,
-        humidityPct: initial?.humidityPct,
-        ammoniaPpm: initial?.ammoniaPpm,
-        ...(editing ? { id: initial!.id } : {}),
+        houseId: record?.houseId ?? "",
+        entryDate: record?.entryDate ?? todayIso(),
+        readingTime: record?.readingTime ?? "07:00",
+        temperatureC: record?.temperatureC,
+        humidityPct: record?.humidityPct,
+        ammoniaPpm: record?.ammoniaPpm,
+        ...(editing ? { id: record!.id } : {}),
       }}
       onSubmit={(values) => (editing ? updateEnvironment(values) : createEnvironment(values))}
       submitLabel={editing ? "Update" : "Save"}

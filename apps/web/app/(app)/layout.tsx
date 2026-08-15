@@ -12,11 +12,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, role, is_active")
+    .select("full_name, role, is_active, must_change_password")
     .eq("id", user.id)
     .maybeSingle();
 
   if (!profile?.is_active || !isAppRole(profile.role)) redirect("/inactive");
+  if (profile.must_change_password) redirect("/change-password");
 
   return (
     <AppShell displayName={profile.full_name || user.email || "User"} role={profile.role}>

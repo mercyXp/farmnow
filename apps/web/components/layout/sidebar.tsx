@@ -20,7 +20,7 @@ import {
   Wheat,
   FileText,
   Building2,
-} from "lucide-react";
+} from "@/components/icons";
 import { cn } from "@/lib/utils";
 import { navForRole, ROLE_LABELS, type AppRole } from "@farmnow/domain";
 import { BrandLogo } from "@/components/brand-logo";

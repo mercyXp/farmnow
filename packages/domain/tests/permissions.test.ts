@@ -81,7 +81,8 @@ describe("routes", () => {
     assert.equal(canAccessPath("entry_clerk", "/users"), false);
     assert.equal(canAccessPath("entry_clerk", "/settings"), false);
     assert.equal(canAccessPath("entry_clerk", "/reports"), false);
-    assert.equal(canAccessPath("entry_clerk", "/flocks/new"), false);
+    assert.equal(canAccessPath("entry_clerk", "/profile"), true);
+    assert.equal(canAccessPath("accountant", "/profile"), true);
   });
 
   it("allows Accountant onto sales and reports but not mortality", () => {

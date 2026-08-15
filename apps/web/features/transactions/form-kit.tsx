@@ -21,7 +21,7 @@ export function ZodForm({
   children,
   submitLabel = "Save",
 }: {
-  schema: z.ZodTypeAny;
+  schema: z.ZodType;
   defaultValues?: DefaultValues<FieldValues>;
   onSubmit: (values: FieldValues) => Promise<{ ok: true; id?: string } | { ok: false; error: string }>;
   onSuccess?: (result: { ok: true; id?: string }) => void;
@@ -31,7 +31,7 @@ export function ZodForm({
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const form = useForm({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema as never),
     defaultValues,
   });
 
@@ -41,7 +41,7 @@ export function ZodForm({
         className="max-w-2xl space-y-4 rounded-xl border bg-card p-6 shadow-sm"
         onSubmit={form.handleSubmit(async (values) => {
           setPending(true);
-          const result = await onSubmit(values);
+          const result = await onSubmit(values as FieldValues);
           setPending(false);
           if (!result.ok) {
             toast.error(result.error);

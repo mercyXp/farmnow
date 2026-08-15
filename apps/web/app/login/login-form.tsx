@@ -1,21 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
-import { Eye, EyeOff, Lock, LogIn, Mail, Shield } from "lucide-react";
+import { Eye, EyeOff, Lock, LogIn, Mail } from "@/components/icons";
 import { loginSchema } from "@farmnow/domain";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/input";
 import { logAuthEvent } from "@/features/auth/actions";
+import { AuthCard } from "@/features/auth/auth-shell";
 
-export function LoginForm() {
+export function LoginForm({ authError }: { authError?: string | null }) {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(authError ?? null);
   const [showPassword, setShowPassword] = useState(false);
   const {
     register,
@@ -27,20 +28,9 @@ export function LoginForm() {
   });
 
   return (
-    <div className="rounded-2xl border border-[#E6DDD0] bg-white p-6 shadow-[0_18px_50px_rgba(27,60,43,0.12)] sm:p-8">
-      <div className="flex justify-center">
-        <div className="text-center">
-          <h2 className="font-serif text-2xl text-[#1B3C2B] sm:text-[1.7rem]">
-            Welcome
-          </h2>
-          <p className="mt-1 text-sm text-[#6B726C]">
-            Broiler Management System
-          </p>
-        </div>
-      </div>
-      <div className="mt-5 h-px bg-[#E6DDD0]" />
+    <AuthCard title="Welcome" description="Broiler Management System">
       <form
-        className="mt-6 space-y-4"
+        className="space-y-4"
         onSubmit={handleSubmit(async (values) => {
           setError(null);
           const supabase = createClient();
@@ -99,13 +89,9 @@ export function LoginForm() {
           </div>
           {errors.password ? <p className="text-xs text-destructive">{errors.password.message}</p> : null}
           <div className="flex justify-end">
-            <button
-              type="button"
-              className="text-sm font-medium text-[#A35C31] hover:underline"
-              onClick={() => toast.message("Ask a Superadmin to reset your password.")}
-            >
+            <Link href="/forgot-password" className="text-sm font-medium text-[#A35C31] hover:underline">
               Forgot password?
-            </button>
+            </Link>
           </div>
         </div>
         {error ? <p className="text-sm text-destructive">{error}</p> : null}
@@ -123,6 +109,6 @@ export function LoginForm() {
         <p className="text-xs tracking-wide">Secure &nbsp;•&nbsp; Reliable &nbsp;•&nbsp; Smart Farming</p>
         <span className="h-px flex-1 bg-[#E6DDD0]" />
       </div>
-    </div>
+    </AuthCard>
   );
 }
