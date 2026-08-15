@@ -1,0 +1,17 @@
+{
+  "name": "@farmnow/database",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "echo \"no lint\"",
+    "test": "echo \"no tests\""
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  }
+}

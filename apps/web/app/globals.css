@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f4efe4;
+  --foreground: #1c2a1f;
+  --card: #fffaf1;
+  --card-foreground: #1c2a1f;
+  --popover: #fffaf1;
+  --popover-foreground: #1c2a1f;
+  --primary: #1f4d32;
+  --primary-foreground: #f4efe4;
+  --secondary: #e7dcc8;
+  --secondary-foreground: #1c2a1f;
+  --muted: #ebe1d0;
+  --muted-foreground: #5c675d;
+  --accent: #c46a2b;
+  --accent-foreground: #fffaf1;
+  --destructive: #9b2c2c;
+  --destructive-foreground: #fffaf1;
+  --border: #d9cdb6;
+  --input: #d9cdb6;
+  --ring: #1f4d32;
+  --radius: 0.75rem;
+  --sidebar: #14261b;
+  --sidebar-foreground: #e7dcc8;
+  --sidebar-muted: #8fa394;
+  --chart-1: #1f4d32;
+  --chart-2: #c46a2b;
+  --chart-3: #2b6a7a;
+  --chart-4: #b45309;
+  --chart-5: #7c3aed;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-muted: var(--sidebar-muted);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Source Serif 4", ui-serif, Georgia, serif;
+  --radius-lg: var(--radius);
+}
+
+* {
+  border-color: var(--border);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+h1,
+h2,
+.font-serif {
+  font-family: var(--font-serif);
+}

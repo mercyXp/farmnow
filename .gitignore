@@ -1,0 +1,38 @@
+# dependencies
+node_modules
+.pnpm-store
+
+# next
+apps/web/.next
+apps/web/out
+
+# env
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# os / ide
+.DS_Store
+Thumbs.db
+.idea
+.vscode
+
+# turbo
+.turbo
+
+# test
+coverage
+
+# supabase local
+supabase/.temp
+supabase/.branches
+
+# analysis dumps (regenerable)
+.dist/excel_analysis.json
+.dist/excel_analysis.md
+.dist/excel_tables.json
+.dist/tarballs
+
+#cursor
+.cursor

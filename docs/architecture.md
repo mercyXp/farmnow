@@ -1,6 +1,6 @@
 # FarmNow ERP Architecture
 
-Single-user, cloud broiler farm ERP. Re-engineers the Excel/VBA system (`FarmNow_ERP_System.xlsx`) into a Next.js + Supabase application. Not a visual clone of the workbook.
+Single-company broiler farm ERP. Re-engineers the Excel/VBA system (`FarmNow_ERP_System.xlsx`) into a Next.js + Supabase application. Not a visual clone of the workbook.
 
 ## Stack
 
@@ -51,13 +51,17 @@ apps/web/features/<module>/
 
 Shared Excel-parity math lives in `packages/domain` so tests do not need React or a database.
 
-## Auth
+## Auth and roles
 
-- `/login` with email/password via Supabase Auth.
-- Middleware + server layout guard all `/` app routes except `/login`.
-- `profiles` row (1:1 with `auth.users`) holds display name. Single administrator for v1.
-- RLS: authenticated users may read/write operational tables. Anon has no access.
-- Schema is user-id-ready (`created_by`) so additional users can be added later without a rewrite. No multi-tenant org table.
+- `/login` with email/password via Supabase Auth. Multiple staff accounts are supported.
+- `profiles` (1:1 with `auth.users`) stores `full_name`, `role`, and `is_active`. Canonical roles: `superadmin`, `admin`, `manager`, `supervisor`, `accountant`, `entry_clerk`.
+- The first Auth user becomes Superadmin. Additional users are created from `/users` (Supabase Auth Admin API). Passwords are never stored in FarmNow tables.
+- Permission matrix: `packages/domain/src/permissions.ts` and `docs/permissions.md`.
+- Enforcement: role-aware sidebar (UX) + middleware path checks + `requirePermission` on Server Actions/routes + PostgreSQL RLS. Inactive users are blocked.
+- Service-role client (`SUPABASE_SERVICE_ROLE_KEY`) is server-only, used for user management. It must never be prefixed with `NEXT_PUBLIC_`.
+- No multi-tenant organization table. One company.
+
+See `docs/permissions.md` for the matrix and Superadmin protection rules.
 
 ## Transaction integrity
 
@@ -79,11 +83,12 @@ Critical checks run in SQL (check constraints + RPC) so they cannot be bypassed 
 
 | Nav group | Routes |
 |---|---|
-| Dashboard | `/dashboard` |
+| Dashboard | `/dashboard` (role-specific composition) |
 | Farm | `/flocks`, `/flocks/[id]`, `/performance`, `/routines`, `/environment` |
 | Transactions | `/mortality`, `/feed`, `/medicine`, `/inventory`, `/sales`, `/purchases`, `/expenses`, `/income` |
-| Reports | `/reports`, PDF download routes |
-| Settings | master data, lookups, company/KPI settings, audit, Excel import |
+| Partners | `/customers`, `/suppliers` |
+| Reports | `/reports`, PDF download routes (permission-gated) |
+| System | `/users`, Settings (master data, company/KPI keys, audit, Excel import) |
 
 `/purchases` is feed purchases (the only purchase register in Excel). `/inventory` combines feed stock + medicine lots + alerts.
 

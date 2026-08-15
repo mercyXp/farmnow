@@ -35,6 +35,7 @@ audit_logs, profiles
 - Soft-delete by `is_active = false`
 - Excel `"Overhead"` expenses → `expenses.flock_id is null`
 - Status strings match Excel: `Active`, `Closed`, `Inactive`
+- `profiles.role` is `public.app_role` (`superadmin` | `admin` | `manager` | `supervisor` | `accountant` | `entry_clerk`)
 
 ## Views
 
@@ -50,7 +51,9 @@ Excel `calc_FeedStockSummary`. Opening stock is 0.
 
 ## RLS
 
-Enabled on all application tables. Policies: `authenticated` can select/insert/update/delete. Anon: none. Service role bypasses RLS (server-only).
+Enabled on all application tables. Policies are role-aware (see `supabase/migrations/20260815140000_rbac.sql`). Anon has no access. The service role bypasses RLS and is used only on the server for user administration. Views use `security_invoker` so underlying table policies apply.
+
+Profile `role` and `is_active` are not updatable by the authenticated role; those changes go through the service-role admin client after permission checks.
 
 ## Sequences
 

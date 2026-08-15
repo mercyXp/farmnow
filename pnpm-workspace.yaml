@@ -1,3 +1,11 @@
 packages:
   - "apps/*"
   - "packages/*"
+
+fetchTimeout: 600000
+fetchRetries: 5
+fetchRetryMintimeout: 20000
+fetchRetryMaxtimeout: 120000
+networkConcurrency: 2
+allowBuilds:
+  sharp: true
