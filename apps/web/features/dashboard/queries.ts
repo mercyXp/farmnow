@@ -85,52 +85,40 @@ export type RecentRow = { kind: string; code: string; when: string };
 
 export async function getRecentEntries(filters?: DashboardFilters): Promise<RecentRow[]> {
   const supabase = await createClient();
-  const from = filters?.from;
-  const to = filters?.to;
-  const flockId = filters?.flockId;
-
-  const mortalityQ = supabase.from("mortality_entries").select("code, entry_date").eq("is_active", true).order("entry_date", { ascending: false }).limit(6);
-  const feedQ = supabase.from("feed_consumption").select("code, entry_date").eq("is_active", true).order("entry_date", { ascending: false }).limit(6);
-  const salesQ = supabase.from("sales").select("code, entry_date").eq("is_active", true).order("entry_date", { ascending: false }).limit(6);
-  const expensesQ = supabase.from("expenses").select("code, entry_date").eq("is_active", true).order("entry_date", { ascending: false }).limit(6);
-
   const [mortality, feed, sales, expenses] = await Promise.all([
-    from || to || flockId
-      ? (flockId ? mortalityQ.eq("flock_id", flockId) : mortalityQ)
-          .gte("entry_date", from ?? "0001-01-01")
-          .lte("entry_date", to ?? "9999-12-31")
-      : mortalityQ,
-    from || to || flockId
-      ? (flockId ? feedQ.eq("flock_id", flockId) : feedQ)
-          .gte("entry_date", from ?? "0001-01-01")
-          .lte("entry_date", to ?? "9999-12-31")
-      : feedQ,
-    from || to || flockId
-      ? (flockId ? salesQ.eq("flock_id", flockId) : salesQ)
-          .gte("entry_date", from ?? "0001-01-01")
-          .lte("entry_date", to ?? "9999-12-31")
-      : salesQ,
-    from || to || flockId
-      ? (flockId ? expensesQ.eq("flock_id", flockId) : expensesQ)
-          .gte("entry_date", from ?? "0001-01-01")
-          .lte("entry_date", to ?? "9999-12-31")
-      : expensesQ,
+    supabase.from("mortality_entries").select("code, entry_date, flock_id").eq("is_active", true).order("entry_date", { ascending: false }).limit(30),
+    supabase.from("feed_consumption").select("code, entry_date, flock_id").eq("is_active", true).order("entry_date", { ascending: false }).limit(30),
+    supabase.from("sales").select("code, entry_date, flock_id").eq("is_active", true).order("entry_date", { ascending: false }).limit(30),
+    supabase.from("expenses").select("code, entry_date, flock_id").eq("is_active", true).order("entry_date", { ascending: false }).limit(30),
   ]);
   return [
-    ...(mortality.data ?? []).map((r) => ({ kind: "Mortality", code: r.code, when: r.entry_date })),
-    ...(feed.data ?? []).map((r) => ({ kind: "Feed", code: r.code, when: r.entry_date })),
-    ...(sales.data ?? []).map((r) => ({ kind: "Sale", code: r.code, when: r.entry_date })),
-    ...(expenses.data ?? []).map((r) => ({ kind: "Expense", code: r.code, when: r.entry_date })),
+    ...(mortality.data ?? []).map((r) => ({ kind: "Mortality", code: r.code, when: r.entry_date, flockId: r.flock_id })),
+    ...(feed.data ?? []).map((r) => ({ kind: "Feed", code: r.code, when: r.entry_date, flockId: r.flock_id })),
+    ...(sales.data ?? []).map((r) => ({ kind: "Sale", code: r.code, when: r.entry_date, flockId: r.flock_id })),
+    ...(expenses.data ?? []).map((r) => ({ kind: "Expense", code: r.code, when: r.entry_date, flockId: r.flock_id })),
   ]
+    .filter((r) => {
+      if (filters?.from && r.when < filters.from) return false;
+      if (filters?.to && r.when > filters.to) return false;
+      if (filters?.flockId && r.flockId !== filters.flockId) return false;
+      return true;
+    })
     .sort((a, b) => b.when.localeCompare(a.when))
-    .slice(0, 10);
+    .slice(0, 10)
+    .map(({ kind, code, when }) => ({ kind, code, when }));
 }
 
 export async function getRecentAudit(filters?: DashboardFilters) {
   const supabase = await createClient();
-  let query = supabase.from("audit_logs").select("action, entity_type, created_at").order("created_at", { ascending: false }).limit(8);
-  if (filters?.from) query = query.gte("created_at", `${filters.from}T00:00:00`);
-  if (filters?.to) query = query.lte("created_at", `${filters.to}T23:59:59`);
-  const { data } = await query;
-  return data ?? [];
+  const { data } = await supabase
+    .from("audit_logs")
+    .select("action, entity_type, created_at")
+    .order("created_at", { ascending: false })
+    .limit(40);
+  return (data ?? []).filter((row) => {
+    const day = row.created_at.slice(0, 10);
+    if (filters?.from && day < filters.from) return false;
+    if (filters?.to && day > filters.to) return false;
+    return true;
+  }).slice(0, 8);
 }

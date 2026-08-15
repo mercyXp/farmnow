@@ -1,20 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
+import { hasPermission, reportTypeSchema } from "@farmnow/domain";
 import { requirePermission } from "@/lib/supabase/server";
 import { financialSummaryPdf, flockPerformancePdf, mortalityReportPdf } from "@/features/reports/pdf";
+import { archiveGeneratedPdf } from "@/features/reports/archive";
 import { writeAudit } from "@/lib/audit";
 
 export async function GET(request: NextRequest) {
   try {
-    const type = request.nextUrl.searchParams.get("type");
+    const parsedType = reportTypeSchema.safeParse(request.nextUrl.searchParams.get("type"));
+    if (!parsedType.success) {
+      return NextResponse.json({ error: "Unknown report type." }, { status: 400 });
+    }
+    const type = parsedType.data;
     const flockId = request.nextUrl.searchParams.get("flockId");
     const generated = new Date().toISOString().slice(0, 10);
 
     if (type === "financial") {
       const { supabase, user } = await requirePermission("viewFinancialReports");
       const { data } = await supabase.from("v_flock_kpis").select("*").order("flock_code");
-      const buf = await financialSummaryPdf(data ?? [], generated);
+      const fileName = `RPT_FinancialSummary_ALL_${generated}.pdf`;
+      const buf = Buffer.from(await financialSummaryPdf(data ?? [], generated));
+      await archiveGeneratedPdf(supabase, user.id, "financial", fileName, buf);
       await writeAudit(supabase, user, { action: "generate", entityType: "rpt_FinancialSummary", entityId: "ALL" });
-      return pdfResponse(buf, `RPT_FinancialSummary_ALL_${generated}.pdf`);
+      return pdfResponse(buf, fileName);
     }
 
     if (!flockId) {
@@ -22,12 +30,14 @@ export async function GET(request: NextRequest) {
     }
 
     if (type === "flock") {
-      const { supabase, user } = await requirePermission("viewOperationalReports", "viewFinancialReports");
+      const { supabase, user, profile } = await requirePermission("viewOperationalReports");
       const { data: kpi } = await supabase.from("v_flock_kpis").select("*").eq("flock_id", flockId).maybeSingle();
       if (!kpi) return NextResponse.json({ error: "Flock not found." }, { status: 404 });
-      const buf = await flockPerformancePdf(kpi, generated);
+      const fileName = `RPT_FlockPerformance_${kpi.flock_code}_${generated}.pdf`;
+      const buf = Buffer.from(await flockPerformancePdf(kpi, generated, hasPermission(profile.role, "viewFinancials")));
+      await archiveGeneratedPdf(supabase, user.id, "flock", fileName, buf, kpi.flock_id);
       await writeAudit(supabase, user, { action: "generate", entityType: "rpt_FlockPerformance", entityId: kpi.flock_code });
-      return pdfResponse(buf, `RPT_FlockPerformance_${kpi.flock_code}_${generated}.pdf`);
+      return pdfResponse(buf, fileName);
     }
 
     if (type === "mortality") {
@@ -60,9 +70,13 @@ export async function GET(request: NextRequest) {
           cumulative,
         };
       });
-      const buf = await mortalityReportPdf(kpi.flock_code, kpi.placed_date, kpi.total_mortality, Number(kpi.livability_pct), weeks, generated);
+      const fileName = `RPT_MortalityHealth_${kpi.flock_code}_${generated}.pdf`;
+      const buf = Buffer.from(
+        await mortalityReportPdf(kpi.flock_code, kpi.placed_date, kpi.total_mortality, Number(kpi.livability_pct), weeks, generated),
+      );
+      await archiveGeneratedPdf(supabase, user.id, "mortality", fileName, buf, kpi.flock_id);
       await writeAudit(supabase, user, { action: "generate", entityType: "rpt_MortalityTrend", entityId: kpi.flock_code });
-      return pdfResponse(buf, `RPT_MortalityHealth_${kpi.flock_code}_${generated}.pdf`);
+      return pdfResponse(buf, fileName);
     }
 
     return NextResponse.json({ error: "Unknown report type." }, { status: 400 });

@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatNumber, formatPct, formatZmw } from "@/lib/utils";
 import type { DashboardData } from "@/features/dashboard/queries";
-import { activeKpiSummary, dashboardAlerts } from "@/features/dashboard/queries";
+import { dashboardAlerts, kpiSummary } from "@/features/dashboard/queries";
 import { DashboardCharts } from "@/features/dashboard/charts";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -50,7 +50,7 @@ export function AlertCard({ data }: { data: DashboardData }) {
       </CardHeader>
       <CardContent className="space-y-2">
         {alerts.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No active flocks to alert on.</p>
+          <p className="text-sm text-muted-foreground">No flocks in view to alert on.</p>
         ) : (
           alerts.map((a) => (
             <div key={a.code} className="flex items-start justify-between gap-3 rounded-lg bg-muted/50 px-3 py-2">
@@ -98,21 +98,21 @@ export function InventoryAlerts({ data }: { data: DashboardData }) {
 }
 
 export function FarmKpis({ data }: { data: DashboardData }) {
-  const s = activeKpiSummary(data.kpis);
+  const s = kpiSummary(data.kpis);
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-      <KpiWidget label="Active flocks" value={formatNumber(s.activeCount)} />
+      <KpiWidget label="Flocks in view" value={formatNumber(s.flockCount)} hint={`${formatNumber(s.activeCount)} active`} />
       <KpiWidget label="Current birds (Excel)" value={formatNumber(s.currentBirds)} hint="Initial − mortality" />
       <KpiWidget label="Birds remaining" value={formatNumber(s.remainingBirds)} />
-      <KpiWidget label="Livability % (active)" value={formatPct(s.livability)} />
-      <KpiWidget label="Mortality % (active)" value={formatPct(s.mortalityPct)} />
-      <KpiWidget label="Avg FCR (active)" value={formatNumber(s.avgFcr, 2)} />
+      <KpiWidget label="Livability %" value={formatPct(s.livability)} />
+      <KpiWidget label="Mortality %" value={formatPct(s.mortalityPct)} />
+      <KpiWidget label="Avg FCR" value={formatNumber(s.avgFcr, 2)} />
     </div>
   );
 }
 
 export function FinancialKpis({ data }: { data: DashboardData }) {
-  const s = activeKpiSummary(data.kpis);
+  const s = kpiSummary(data.kpis);
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <KpiWidget label="Sales (ZMW)" value={formatZmw(s.sales)} />

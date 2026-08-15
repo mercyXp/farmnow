@@ -61,6 +61,17 @@ describe("permission matrix", () => {
     assert.equal(hasPermission("entry_clerk", "viewAuditLogs"), false);
     assert.equal(hasPermission("entry_clerk", "manageUsers"), false);
   });
+
+  it("restricts historical transaction edit/delete to Superadmin and Admin", () => {
+    assert.equal(hasPermission("superadmin", "editTransactions"), true);
+    assert.equal(hasPermission("superadmin", "deleteTransactions"), true);
+    assert.equal(hasPermission("admin", "editTransactions"), true);
+    assert.equal(hasPermission("admin", "deleteTransactions"), true);
+    for (const role of ["manager", "supervisor", "accountant", "entry_clerk"] as const) {
+      assert.equal(hasPermission(role, "editTransactions"), false);
+      assert.equal(hasPermission(role, "deleteTransactions"), false);
+    }
+  });
 });
 
 describe("routes", () => {

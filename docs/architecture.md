@@ -10,7 +10,7 @@ Single-company broiler farm ERP. Re-engineers the Excel/VBA system (`FarmNow_ERP
 | UI | Tailwind CSS, shadcn/ui, Lucide |
 | Forms | React Hook Form + Zod (client and server) |
 | Charts | Recharts |
-| Data | Supabase PostgreSQL + Auth |
+| Data | Supabase PostgreSQL + Auth + Storage |
 | Access | Supabase JS client (no second ORM) |
 | PDF | `@react-pdf/renderer` on the server |
 | Excel import | ExcelJS parse → Zod validate → preview → insert |
@@ -87,7 +87,7 @@ Critical checks run in SQL (check constraints + RPC) so they cannot be bypassed 
 | Farm | `/flocks`, `/flocks/[id]`, `/performance`, `/routines`, `/environment` |
 | Transactions | `/mortality`, `/feed`, `/medicine`, `/inventory`, `/sales`, `/purchases`, `/expenses`, `/income` |
 | Partners | `/customers`, `/suppliers` |
-| Reports | `/reports`, PDF download routes (permission-gated) |
+| Reports | `/reports` (flock / mortality / financial PDFs only; archived in Storage) |
 | System | `/users`, Settings (master data, company/KPI keys, audit, Excel import) |
 
 `/purchases` is feed purchases (the only purchase register in Excel). `/inventory` combines feed stock + medicine lots + alerts.

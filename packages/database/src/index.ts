@@ -643,6 +643,28 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["audit_logs"]["Insert"]>;
         Relationships: [];
       };
+      generated_reports: {
+        Row: {
+          id: string;
+          report_type: "flock" | "mortality" | "financial";
+          flock_id: string | null;
+          storage_path: string;
+          file_name: string;
+          generated_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          report_type: "flock" | "mortality" | "financial";
+          flock_id?: string | null;
+          storage_path: string;
+          file_name: string;
+          generated_by?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["generated_reports"]["Insert"]>;
+        Relationships: [Fk<"flock_id", "flocks">];
+      };
       entry_counters: {
         Row: { prefix: string; last_value: number };
         Insert: { prefix: string; last_value?: number };

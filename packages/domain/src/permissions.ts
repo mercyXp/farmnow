@@ -54,6 +54,8 @@ export const PERMISSIONS = [
   "importExcel",
   "viewCustomers",
   "viewSuppliers",
+  "editTransactions",
+  "deleteTransactions",
 ] as const;
 
 export type Permission = (typeof PERMISSIONS)[number];
@@ -88,6 +90,7 @@ export const ROLE_PERMISSIONS: Record<AppRole, readonly Permission[]> = {
     "viewCustomers",
     "viewSuppliers",
   ],
+  // editTransactions / deleteTransactions stay Superadmin + Admin only
   supervisor: [
     "viewFlocks",
     "viewMortality",
@@ -163,6 +166,10 @@ export function hasPermission(role: AppRole, permission: Permission): boolean {
 
 export function hasAnyPermission(role: AppRole, permissions: readonly Permission[]): boolean {
   return permissions.some((p) => hasPermission(role, p));
+}
+
+export function canMutateTransactions(role: AppRole): boolean {
+  return hasAnyPermission(role, ["editTransactions", "deleteTransactions"]);
 }
 
 export const ADMIN_ASSIGNABLE_ROLES: readonly AppRole[] = [

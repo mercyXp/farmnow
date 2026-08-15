@@ -251,9 +251,9 @@ calc_KPI_Engine → v_flock_kpis → Dashboard, flock list, flock detail, report
 ### Reports
 
 ```
-rpt_FlockPerformance → /reports/flock-performance + PDF
-rpt_FinancialSummary → /reports/financial + PDF
-rpt_MortalityTrend → /reports/mortality + PDF
+rpt_FlockPerformance → `/reports` flock PDF (no date filter)
+rpt_FinancialSummary → `/reports` financial PDF (all flocks)
+rpt_MortalityTrend → `/reports` mortality PDF (weekly from placement)
     Week n: placed+(7*(n-1)) to placed+(7*n-1); 8 weeks
 ```
 

@@ -36,8 +36,9 @@ The first Auth user (when no Superadmin exists) is assigned `superadmin`. Later 
 | Excel import | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ |
 | User management | ✓ | Lower roles only | ✗ | ✗ | ✗ | ✗ |
 | Audit logs | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ |
+| Edit / delete historical transactions | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ |
 
-Manager is read-only on transactions. Admin cannot change company KPI/settings keys, cannot assign `superadmin` or `admin`, and cannot edit Superadmin accounts.
+Manager is read-only on transactions. Entry Clerk can create daily entries but cannot change or deactivate historical transactions. Admin cannot change company KPI/settings keys, cannot assign `superadmin` or `admin`, and cannot edit Superadmin accounts. Reports are the three Excel PDFs only (flock performance, mortality & health, financial summary) with no date filter.
 
 ## Superadmin protection
 

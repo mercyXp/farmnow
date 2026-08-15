@@ -1,4 +1,6 @@
-import Link from "next/link";
+"use client";
+
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import type { DashboardFilters } from "@/features/dashboard/filters";
@@ -17,18 +19,37 @@ export function DashboardFilterBar({
   resultCount: number;
   totalCount: number;
 }) {
+  const router = useRouter();
+
   return (
-    <form method="get" action="/dashboard" className="rounded-xl border bg-card p-4">
+    <form
+      className="rounded-xl border bg-card p-4"
+      onSubmit={(e) => {
+        e.preventDefault();
+        const fd = new FormData(e.currentTarget);
+        const params = new URLSearchParams();
+        const from = String(fd.get("from") ?? "");
+        const to = String(fd.get("to") ?? "");
+        const flock = String(fd.get("flock") ?? "");
+        const status = String(fd.get("status") ?? "active");
+        if (from) params.set("from", from);
+        if (to) params.set("to", to);
+        if (flock) params.set("flock", flock);
+        if (status && status !== "active") params.set("status", status);
+        const query = params.toString();
+        router.push(query ? `/dashboard?${query}` : "/dashboard");
+      }}
+    >
       <div className="flex flex-wrap items-end gap-3">
-        <label className="space-y-1 text-sm">
+        <div className="space-y-1 text-sm">
           <Label htmlFor="from">Placed from</Label>
           <Input id="from" name="from" type="date" defaultValue={filters.from ?? ""} className="w-40" />
-        </label>
-        <label className="space-y-1 text-sm">
+        </div>
+        <div className="space-y-1 text-sm">
           <Label htmlFor="to">Placed to</Label>
           <Input id="to" name="to" type="date" defaultValue={filters.to ?? ""} className="w-40" />
-        </label>
-        <label className="space-y-1 text-sm">
+        </div>
+        <div className="space-y-1 text-sm">
           <Label htmlFor="flock">Flock</Label>
           <select
             id="flock"
@@ -43,8 +64,8 @@ export function DashboardFilterBar({
               </option>
             ))}
           </select>
-        </label>
-        <label className="space-y-1 text-sm">
+        </div>
+        <div className="space-y-1 text-sm">
           <Label htmlFor="status">Status</Label>
           <select
             id="status"
@@ -56,19 +77,19 @@ export function DashboardFilterBar({
             <option value="closed">Closed</option>
             <option value="all">All</option>
           </select>
-        </label>
+        </div>
         <Button type="submit" variant="secondary">
           Apply
         </Button>
         {!filtersAreDefault(filters) ? (
-          <Button asChild variant="outline">
-            <Link href="/dashboard">Reset</Link>
+          <Button type="button" variant="outline" onClick={() => router.push("/dashboard")}>
+            Reset
           </Button>
         ) : null}
       </div>
       <p className="mt-3 text-xs text-muted-foreground">
         Showing {resultCount} of {totalCount} flocks. Date range filters by placement date. KPI totals follow the Excel
-        snapshot for the flocks in view.
+        snapshot for the flocks in view. Recent activity uses the same dates.
       </p>
     </form>
   );

@@ -1,5 +1,6 @@
 "use server";
 
+import { ZodError } from "zod";
 import { requirePermission } from "@/lib/supabase/server";
 import { nextCode, writeAudit } from "@/lib/audit";
 import { publicError } from "@/lib/utils";
@@ -36,6 +37,9 @@ export async function createFlock(input: unknown): Promise<ActionResult> {
     });
     return { ok: true, id: data.id };
   } catch (error) {
+    if (error instanceof ZodError) {
+      return { ok: false, error: error.issues[0]?.message ?? "Invalid input." };
+    }
     return { ok: false, error: publicError(error) };
   }
 }

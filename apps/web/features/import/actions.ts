@@ -3,6 +3,7 @@
 import { parseFarmNowWorkbook } from "@/features/import/parse";
 import { applyFarmNowImport } from "@/features/import/apply";
 import { requirePermission } from "@/lib/supabase/server";
+import { uploadPrivateFile } from "@/lib/storage";
 import { writeAudit } from "@/lib/audit";
 import { publicError } from "@/lib/utils";
 import { revalidatePath } from "next/cache";
@@ -37,11 +38,20 @@ export async function confirmExcelImport(
     if (parsed.errors.length > 0) {
       return { ok: false, error: parsed.errors.slice(0, 8).join(" ") };
     }
+    const buffer = fromBase64(bytesB64);
+    const storagePath = `${user.id}/${Date.now()}.xlsx`;
+    await uploadPrivateFile(
+      supabase,
+      "imports",
+      storagePath,
+      buffer,
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
     const { inserted } = await applyFarmNowImport(supabase, user.id, parsed);
     await writeAudit(supabase, user, {
       action: "import",
       entityType: "excel",
-      entityId: "workbook",
+      entityId: storagePath,
       newData: inserted,
     });
     revalidatePath("/");

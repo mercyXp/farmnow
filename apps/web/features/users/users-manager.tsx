@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { APP_ROLES, ROLE_LABELS, type AppRole } from "@farmnow/domain";
+import { APP_ROLES, ROLE_LABELS, userCreateSchema, type AppRole } from "@farmnow/domain";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -53,24 +55,22 @@ export function UsersManager({
 }
 
 function CreateUserForm({ assignable }: { assignable: AppRole[] }) {
-  const [pending, setPending] = useState(false);
   const router = useRouter();
+  const form = useForm({
+    resolver: zodResolver(userCreateSchema),
+    defaultValues: {
+      fullName: "",
+      email: "",
+      password: "",
+      role: assignable[0] ?? "entry_clerk",
+      isActive: true,
+    },
+  });
   return (
     <form
       className="grid gap-3 rounded-xl border bg-card p-6 sm:grid-cols-2 lg:grid-cols-3"
-      onSubmit={async (e) => {
-        e.preventDefault();
-        const form = e.currentTarget;
-        const fd = new FormData(form);
-        setPending(true);
-        const result = await createUser({
-          fullName: String(fd.get("fullName") ?? ""),
-          email: String(fd.get("email") ?? ""),
-          password: String(fd.get("password") ?? ""),
-          role: String(fd.get("role") ?? ""),
-          isActive: fd.get("isActive") === "on",
-        });
-        setPending(false);
+      onSubmit={form.handleSubmit(async (values) => {
+        const result = await createUser(values);
         if (!result.ok) {
           toast.error(result.error);
           return;
@@ -78,19 +78,49 @@ function CreateUserForm({ assignable }: { assignable: AppRole[] }) {
         toast.success("User created");
         form.reset();
         router.refresh();
-      }}
+      })}
     >
-      <Field name="fullName" label="Full name" required />
-      <Field name="email" label="Email" type="email" required />
-      <Field name="password" label="Temporary password" type="password" minLength={8} required />
-      <RoleSelect name="role" roles={assignable} />
+      <div className="space-y-1">
+        <Label htmlFor="fullName">Full name</Label>
+        <Input id="fullName" {...form.register("fullName")} />
+        {form.formState.errors.fullName ? (
+          <p className="text-xs text-destructive">{form.formState.errors.fullName.message}</p>
+        ) : null}
+      </div>
+      <div className="space-y-1">
+        <Label htmlFor="email">Email</Label>
+        <Input id="email" type="email" {...form.register("email")} />
+        {form.formState.errors.email ? (
+          <p className="text-xs text-destructive">{form.formState.errors.email.message}</p>
+        ) : null}
+      </div>
+      <div className="space-y-1">
+        <Label htmlFor="password">Temporary password</Label>
+        <Input id="password" type="password" autoComplete="new-password" {...form.register("password")} />
+        {form.formState.errors.password ? (
+          <p className="text-xs text-destructive">{form.formState.errors.password.message}</p>
+        ) : null}
+      </div>
+      <div className="space-y-1">
+        <Label htmlFor="role">Role</Label>
+        <select id="role" className="h-10 w-full rounded-md border bg-card px-3 text-sm" {...form.register("role")}>
+          {(assignable.length > 0 ? assignable : [...APP_ROLES]).map((role) => (
+            <option key={role} value={role}>
+              {ROLE_LABELS[role]}
+            </option>
+          ))}
+        </select>
+        {form.formState.errors.role ? (
+          <p className="text-xs text-destructive">{form.formState.errors.role.message}</p>
+        ) : null}
+      </div>
       <label className="flex items-center gap-2 self-end text-sm">
-        <input type="checkbox" name="isActive" defaultChecked className="h-4 w-4" />
+        <input type="checkbox" className="h-4 w-4" {...form.register("isActive")} />
         Active
       </label>
       <div className="flex items-end">
-        <Button type="submit" disabled={pending}>
-          {pending ? "Creating…" : "Create user"}
+        <Button type="submit" disabled={form.formState.isSubmitting}>
+          {form.formState.isSubmitting ? "Creating…" : "Create user"}
         </Button>
       </div>
     </form>

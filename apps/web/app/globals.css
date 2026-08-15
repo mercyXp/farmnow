@@ -79,3 +79,17 @@ h2,
 .font-serif {
   font-family: var(--font-serif);
 }
+
+.login-page {
+  min-height: 100vh;
+  background-image: url("/farmnow-bg.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+@media (max-width: 640px) {
+  .login-page {
+    background-position: center bottom;
+  }
+}

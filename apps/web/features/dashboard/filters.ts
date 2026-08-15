@@ -47,13 +47,3 @@ export function filterDashboardKpis(kpis: FlockKpi[], filters: DashboardFilters)
 export function filtersAreDefault(filters: DashboardFilters): boolean {
   return !filters.from && !filters.to && !filters.flockId && filters.status === "active";
 }
-
-export function dashboardFilterQuery(filters: DashboardFilters): string {
-  const params = new URLSearchParams();
-  if (filters.from) params.set("from", filters.from);
-  if (filters.to) params.set("to", filters.to);
-  if (filters.flockId) params.set("flock", filters.flockId);
-  if (filters.status !== "active") params.set("status", filters.status);
-  const q = params.toString();
-  return q ? `/dashboard?${q}` : "/dashboard";
-}

@@ -11,6 +11,14 @@ export function DashboardCharts({ kpis, showCost = true }: { kpis: FlockKpi[]; s
     cost: Number(Number(k.cost_per_bird).toFixed(2)),
   }));
 
+  if (kpis.length === 0) {
+    return (
+      <div className="rounded-xl border bg-card p-6 text-sm text-muted-foreground">
+        No flocks match these filters. Adjust the date range, flock, or status.
+      </div>
+    );
+  }
+
   return (
     <div className={`grid gap-4 ${showCost ? "lg:grid-cols-3" : "lg:grid-cols-2"}`}>
       <ChartCard title="FCR by flock" data={data} dataKey="fcr" />

@@ -22,7 +22,7 @@ houses, breeds, suppliers, customers, products, feed_types, employees, lookup_op
 feed_purchases ────► feed_types, suppliers
 environment_readings ► houses
 other_income
-audit_logs, profiles
+audit_logs, profiles, generated_reports
 ```
 
 ## Conventions
@@ -58,3 +58,10 @@ Profile `role` and `is_active` are not updatable by the authenticated role; thos
 ## Sequences
 
 `entry_counters(prefix, last_value)` generates the next Excel-style code (`MORT-0001`).
+
+## Storage
+
+Private buckets (see `supabase/migrations/20260815160000_storage_reports.sql`):
+
+- `reports` — generated flock / mortality / financial PDFs, catalogued in `generated_reports`
+- `imports` — uploaded Excel workbooks (Superadmin / Admin only)

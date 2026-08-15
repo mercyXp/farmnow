@@ -1,6 +1,8 @@
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { DashboardData, RecentRow } from "@/features/dashboard/queries";
+import { DashboardFilterBar } from "@/features/dashboard/filter-bar";
+import type { DashboardFilters } from "@/features/dashboard/filters";
 import {
   AlertCard,
   FarmKpis,
@@ -15,15 +17,18 @@ import type { AppRole } from "@farmnow/domain";
 function Shell({
   title,
   description,
+  filters,
   children,
 }: {
   title: string;
   description: string;
+  filters: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
     <div className="space-y-8">
       <PageHeader title={title} description={description} />
+      {filters}
       {children}
     </div>
   );
@@ -33,13 +38,15 @@ export function SuperadminDashboard({
   data,
   audit,
   role,
+  filterBar,
 }: {
   data: DashboardData;
   audit: Array<{ action: string; entity_type: string; created_at: string }>;
   role: AppRole;
+  filterBar: React.ReactNode;
 }) {
   return (
-    <Shell title="Executive dashboard" description="Business, farm, and system overview for the company owner.">
+    <Shell title="Executive dashboard" description="Business, farm, and system overview for the company owner." filters={filterBar}>
       <FarmKpis data={data} />
       <FinancialKpis data={data} />
       <FullCharts data={data} />
@@ -68,9 +75,17 @@ export function SuperadminDashboard({
   );
 }
 
-export function AdminDashboard({ data, role }: { data: DashboardData; role: AppRole }) {
+export function AdminDashboard({
+  data,
+  role,
+  filterBar,
+}: {
+  data: DashboardData;
+  role: AppRole;
+  filterBar: React.ReactNode;
+}) {
   return (
-    <Shell title="Administration dashboard" description="Farm operations, inventory, flocks, and alerts.">
+    <Shell title="Administration dashboard" description="Farm operations, inventory, flocks, and alerts." filters={filterBar}>
       <FarmKpis data={data} />
       <OpsCharts data={data} />
       <QuickActions role={role} />
@@ -82,9 +97,17 @@ export function AdminDashboard({ data, role }: { data: DashboardData; role: AppR
   );
 }
 
-export function ManagerDashboard({ data, role }: { data: DashboardData; role: AppRole }) {
+export function ManagerDashboard({
+  data,
+  role,
+  filterBar,
+}: {
+  data: DashboardData;
+  role: AppRole;
+  filterBar: React.ReactNode;
+}) {
   return (
-    <Shell title="Management dashboard" description="Performance, financial summaries, and operational alerts.">
+    <Shell title="Management dashboard" description="Performance, financial summaries, and operational alerts." filters={filterBar}>
       <FarmKpis data={data} />
       <FinancialKpis data={data} />
       <FullCharts data={data} />
@@ -97,9 +120,17 @@ export function ManagerDashboard({ data, role }: { data: DashboardData; role: Ap
   );
 }
 
-export function SupervisorDashboard({ data, role }: { data: DashboardData; role: AppRole }) {
+export function SupervisorDashboard({
+  data,
+  role,
+  filterBar,
+}: {
+  data: DashboardData;
+  role: AppRole;
+  filterBar: React.ReactNode;
+}) {
   return (
-    <Shell title="Farm operations" description="Flocks, daily activities, mortality, feed, medicine, and inventory alerts.">
+    <Shell title="Farm operations" description="Flocks, daily activities, mortality, feed, medicine, and inventory alerts." filters={filterBar}>
       <FarmKpis data={data} />
       <OpsCharts data={data} />
       <QuickActions role={role} />
@@ -111,9 +142,17 @@ export function SupervisorDashboard({ data, role }: { data: DashboardData; role:
   );
 }
 
-export function AccountantDashboard({ data, role }: { data: DashboardData; role: AppRole }) {
+export function AccountantDashboard({
+  data,
+  role,
+  filterBar,
+}: {
+  data: DashboardData;
+  role: AppRole;
+  filterBar: React.ReactNode;
+}) {
   return (
-    <Shell title="Financial dashboard" description="Sales, purchases, expenses, and profitability.">
+    <Shell title="Financial dashboard" description="Sales, purchases, expenses, and profitability." filters={filterBar}>
       <FinancialKpis data={data} />
       <FullCharts data={data} />
       <QuickActions role={role} />
@@ -125,13 +164,15 @@ export function EntryClerkDashboard({
   data,
   role,
   recent,
+  filterBar,
 }: {
   data: DashboardData;
   role: AppRole;
   recent: RecentRow[];
+  filterBar: React.ReactNode;
 }) {
   return (
-    <Shell title="Today’s entries" description="Record farm activity. You will only see the tools needed for data entry.">
+    <Shell title="Today’s entries" description="Record farm activity. You will only see the tools needed for data entry." filters={filterBar}>
       <QuickActions role={role} />
       <InventoryAlerts data={data} />
       <Card>
@@ -159,19 +200,30 @@ export function RoleDashboard(props: {
   data: DashboardData;
   recent: RecentRow[];
   audit: Array<{ action: string; entity_type: string; created_at: string }>;
+  filters: DashboardFilters;
+  allFlocks: Array<{ id: string; code: string; status: string }>;
+  totalCount: number;
 }) {
+  const filterBar = (
+    <DashboardFilterBar
+      filters={props.filters}
+      flocks={props.allFlocks}
+      resultCount={props.data.kpis.length}
+      totalCount={props.totalCount}
+    />
+  );
   switch (props.role) {
     case "superadmin":
-      return <SuperadminDashboard data={props.data} audit={props.audit} role={props.role} />;
+      return <SuperadminDashboard data={props.data} audit={props.audit} role={props.role} filterBar={filterBar} />;
     case "admin":
-      return <AdminDashboard data={props.data} role={props.role} />;
+      return <AdminDashboard data={props.data} role={props.role} filterBar={filterBar} />;
     case "manager":
-      return <ManagerDashboard data={props.data} role={props.role} />;
+      return <ManagerDashboard data={props.data} role={props.role} filterBar={filterBar} />;
     case "supervisor":
-      return <SupervisorDashboard data={props.data} role={props.role} />;
+      return <SupervisorDashboard data={props.data} role={props.role} filterBar={filterBar} />;
     case "accountant":
-      return <AccountantDashboard data={props.data} role={props.role} />;
+      return <AccountantDashboard data={props.data} role={props.role} filterBar={filterBar} />;
     default:
-      return <EntryClerkDashboard data={props.data} role={props.role} recent={props.recent} />;
+      return <EntryClerkDashboard data={props.data} role={props.role} recent={props.recent} filterBar={filterBar} />;
   }
 }

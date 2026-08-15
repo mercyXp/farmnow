@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { hasPermission } from "@farmnow/domain";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
+import { DataTable } from "@/components/data-table";
 import { EmptyState, PageHeader } from "@/components/page-header";
 import { listFlockKpis } from "@/features/flocks/queries";
 import { requireUser } from "@/lib/supabase/server";
@@ -12,6 +11,20 @@ export default async function FlocksPage() {
   const { profile } = await requireUser();
   const canCreate = hasPermission(profile.role, "createFlock");
   const flocks = await listFlockKpis();
+  const rows = flocks.map((f) => ({
+    id: f.flock_id,
+    flock: f.flock_code,
+    breed: f.breed_name,
+    placed: f.placed_date,
+    initial: f.initial_birds,
+    remaining: f.remaining_birds,
+    age: `${f.days_on_farm}d`,
+    status: f.status,
+    mortalityPct: formatPct(1 - Number(f.livability_pct)),
+    fcr: formatNumber(Number(f.fcr), 2),
+    open: "Open",
+    href: `/flocks/${f.flock_id}`,
+  }));
   return (
     <div>
       <PageHeader
@@ -33,46 +46,23 @@ export default async function FlocksPage() {
           actionLabel={canCreate ? "Create first flock" : undefined}
         />
       ) : (
-        <div className="overflow-hidden rounded-xl border bg-card">
-          <Table>
-            <THead>
-              <TR>
-                <TH>Flock</TH>
-                <TH>Breed</TH>
-                <TH>Placed</TH>
-                <TH>Initial</TH>
-                <TH>Remaining</TH>
-                <TH>Age</TH>
-                <TH>Status</TH>
-                <TH>Mortality %</TH>
-                <TH>FCR</TH>
-                <TH></TH>
-              </TR>
-            </THead>
-            <TBody>
-              {flocks.map((f) => (
-                <TR key={f.flock_id}>
-                  <TD className="font-medium">{f.flock_code}</TD>
-                  <TD>{f.breed_name}</TD>
-                  <TD>{f.placed_date}</TD>
-                  <TD>{formatNumber(f.initial_birds)}</TD>
-                  <TD>{formatNumber(f.remaining_birds)}</TD>
-                  <TD>{f.days_on_farm}d</TD>
-                  <TD>
-                    <Badge variant={f.status === "Active" ? "ok" : "muted"}>{f.status}</Badge>
-                  </TD>
-                  <TD>{formatPct(1 - Number(f.livability_pct))}</TD>
-                  <TD>{formatNumber(Number(f.fcr), 2)}</TD>
-                  <TD>
-                    <Link className="text-sm text-primary underline" href={`/flocks/${f.flock_id}`}>
-                      Open
-                    </Link>
-                  </TD>
-                </TR>
-              ))}
-            </TBody>
-          </Table>
-        </div>
+        <DataTable
+          rowKeyField="id"
+          rows={rows}
+          searchPlaceholder="Search flocks…"
+          columns={[
+            { id: "flock", header: "Flock", field: "flock", hrefField: "href" },
+            { id: "breed", header: "Breed", field: "breed" },
+            { id: "placed", header: "Placed", field: "placed" },
+            { id: "initial", header: "Initial", field: "initial" },
+            { id: "remaining", header: "Remaining", field: "remaining" },
+            { id: "age", header: "Age", field: "age" },
+            { id: "status", header: "Status", field: "status" },
+            { id: "mortalityPct", header: "Mortality %", field: "mortalityPct" },
+            { id: "fcr", header: "FCR", field: "fcr" },
+            { id: "open", header: "", field: "open", hrefField: "href", filterable: false, sortable: false },
+          ]}
+        />
       )}
     </div>
   );

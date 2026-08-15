@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Activity,
   Bird,
   ClipboardList,
   LayoutDashboard,
@@ -24,6 +23,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { navForRole, ROLE_LABELS, type AppRole } from "@farmnow/domain";
+import { BrandLogo } from "@/components/brand-logo";
 
 const icons: Record<string, typeof LayoutDashboard> = {
   "/dashboard": LayoutDashboard,
@@ -51,10 +51,10 @@ export function Sidebar({ role, onNavigate }: { role: AppRole; onNavigate?: () =
   const groups = navForRole(role);
   return (
     <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
-      <div className="flex items-center gap-3 px-5 py-5">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent text-accent-foreground">
-          <Activity className="h-5 w-5" />
-        </div>
+      <div className="flex items-center gap-3 px-4 py-4">
+        <Link href="/dashboard" onClick={onNavigate} className="shrink-0 overflow-hidden rounded-lg">
+          <BrandLogo className="h-12 w-auto" />
+        </Link>
         <div>
           <p className="font-serif text-lg leading-none">FarmNow</p>
           <p className="mt-1 text-xs text-sidebar-muted">{ROLE_LABELS[role]}</p>

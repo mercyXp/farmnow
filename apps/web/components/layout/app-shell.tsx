@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import type { AppRole } from "@farmnow/domain";
 import { ROLE_LABELS } from "@farmnow/domain";
+import { BrandLogo } from "@/components/brand-logo";
 import { logAuthEvent } from "@/features/auth/actions";
 
 export function AppShell({
@@ -47,10 +48,11 @@ export function AppShell({
       ) : null}
       <div className="flex min-h-screen flex-col">
         <header className="sticky top-0 z-30 flex items-center justify-between border-b bg-card/90 px-4 py-3 backdrop-blur">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setOpen(true)} aria-label="Open menu">
               <Menu className="h-5 w-5" />
             </Button>
+            <BrandLogo className="h-9 w-auto overflow-hidden rounded-md lg:hidden" />
             <p className="text-sm text-muted-foreground">FarmNow Limited · Lusaka</p>
           </div>
           <div className="flex items-center gap-3">
